@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>حاسبة الراتب والتواريخ المتقدمة</title>
+    <style>
+        :root {
+            --bg-primary: #f0f4f8;
+            --bg-card: #ffffff;
+            --bg-input: #f8fafc;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --primary-light: #eff6ff;
+            --accent: #0284c7;
+            --danger: #ef4444;
+            --danger-hover: #dc2626;
+            --border: #cbd5e1;
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+            --radius-lg: 16px;
+            --radius-md: 10px;
+            --radius-sm: 6px;
+            --font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        body.dark-mode {
+            --bg-primary: #0f172a;
+            --bg-card: #1e293b;
+            --bg-input: #334155;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --primary: #3b82f6;
+            --primary-hover: #60a5fa;
+            --primary-light: #1e3a8a;
+            --accent: #38bdf8;
+            --border: #475569;
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-family);
+            transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 16px;
+            line-height: 1.5;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 20px;
+            background: var(--bg-card);
+            padding: 16px 24px;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-icon {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 8px 16px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-icon:hover {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .btn-reset {
+            background: #fee2e2;
+            color: var(--danger);
+            border: 1px solid #fca5a5;
+            padding: 8px 16px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn-reset:hover {
+            background: #fecaca;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            background: var(--bg-card);
+            padding: 6px;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px 16px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+
+        .view-panel {
+            display: none;
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+
+        .view-panel.active {
+            display: block;
+        }
+
+        .salary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--primary-light);
+        }
+
+        .input-group {
+            margin-bottom: 14px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text-primary);
+        }
+
+        .input-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        input[type="text"], input[type="number"], input[type="date"], select {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            background: var(--bg-input);
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        input[readonly] {
+            background-color: var(--primary-light);
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .summary-card {
+            background: var(--primary-light);
+            border: 1px solid var(--primary);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .summary-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .summary-value {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .net-salary-card {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #ffffff;
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            margin-top: 24px;
+            text-align: center;
+            box-shadow: 0 10px 20px rgba(37, 99, 235, 0.25);
+        }
+
+        .net-salary-card h2 {
+            font-size: 1.4rem;
+            margin-bottom: 8px;
+        }
+
+        .net-salary-card .amount {
+            font-size: 2.2rem;
+            font-weight: 900;
+            letter-spacing: 0.5px;
+        }
+
+        .date-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .date-box {
+            background: var(--bg-input);
+            padding: 20px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+        }
+
+        .result-box {
+            margin-top: 14px;
+            padding: 12px;
+            background: var(--bg-card);
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            font-weight: 700;
+            color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>حاسبة الراتب والتواريخ</h1>
+            <div class="header-actions">
+                <button class="btn-reset" onclick="resetSalaryForm()">مسح الكل 🗑️</button>
+                <button class="btn-icon" id="themeToggleBtn" onclick="toggleTheme()">
+                    <span id="themeIcon">🌙</span>
+                    <span id="themeText">الوضع الليلي</span>
+                </button>
+            </div>
+        </header>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('salary')">حاسبة الراتب</button>
+            <button class="tab-btn" onclick="switchTab('date')">حاسبة التواريخ</button>
+        </div>
+
+        <!-- Salary Calculator Panel -->
+        <div id="salaryView" class="view-panel active">
+            <div class="salary-grid">
+                <!-- Nominal Salary & Allowances -->
+                <div>
+                    <div class="section-title">المعلومات الأساسية والمخصصات</div>
+                    <div class="input-group">
+                        <label for="nominalSalary">الراتب الاسمي (دينار)</label>
+                        <input type="text" id="nominalSalary" placeholder="0" oninput="handleCurrencyInput(this); calculateSalary();">
+                    </div>
+
+                    <div class="section-title" style="font-size: 1rem; margin-top: 20px;">المخصصات</div>
+                    
+                    <div class="input-group">
+                        <label for="degreeSelect">الشهادة العلمية</label>
+                        <div class="input-row">
+                            <select id="degreeSelect" onchange="calculateSalary()">
+                                <option value="none">بدون شهادة (0%)</option>
+                                <option value="primary">ابتدائية (15%)</option>
+                                <option value="intermediate">متوسطة (15%)</option>
+                                <option value="preparatory">اعدادية (30%)</option>
+                                <option value="institute">معهد (35%)</option>
+                                <option value="bachelor" selected>بكلوريوس (45%)</option>
+                                <option value="higher_diploma">دبلوم عالي (55%)</option>
+                                <option value="master">ماستر (65%)</option>
+                                <option value="phd">دكتورا (75%)</option>
+                            </select>
+                            <input type="text" id="degreeVal" readonly placeholder="القيمة">
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label>خطورة فنية (%)</label>
+                        <div class="input-row">
+                            <input type="number" id="hazardPct" value="0" min="0" max="100" oninput="calculateSalary()">
+                            <input type="text" id="hazardVal" readonly placeholder="القيمة">
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label>خاصة (30%)</label>
+                        <div class="input-row">
+                            <input type="text" value="30%" readonly style="width: 80px;">
+                            <input type="text" id="specialVal" readonly placeholder="القيمة">
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label>هندسية (%)</label>
+                        <div class="input-row">
+                            <input type="number" id="engineeringPct" value="50" min="0" max="100" oninput="calculateSalary()">
+                            <input type="text" id="engineeringVal" readonly placeholder="القيمة">
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label>منصب (%)</label>
+                        <div class="input-row">
+                            <input type="number" id="positionPct" value="0" min="0" max="100" oninput="calculateSalary()">
+                            <input type="text" id="positionVal" readonly placeholder="القيمة">
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="maritalVal">زوجية (مبلغ ثابت)</label>
+                        <input type="text" id="maritalVal" value="50,000" oninput="handleCurrencyInput(this); calculateSalary();">
+                    </div>
+
+                    <div class="input-group">
+                        <label for="childrenVal">أطفال (مبلغ ثابت)</label>
+                        <input type="text" id="childrenVal" value="10,000" oninput="handleCurrencyInput(this); calculateSalary();">
+                    </div>
+
+                    <div class="input-group">
+                        <label for="transportVal">أجور نقل (مبلغ ثابت)</label>
+                        <input type="text" id="transportVal" value="20,000" oninput="handleCurrencyInput(this); calculateSalary();">
+                    </div>
+
+                    <div class="summary-card">
+                        <span class="summary-title">الراتب الكلي (مع المخصصات)</span>
+                        <span class="summary-value" id="grossSalary">0</span>
+                    </div>
+                </div>
+
+                <!-- Deductions -->
+                <div>
+                    <div class="section-title">الاستقطاعات</div>
+                    
+                    <div class="input-group">
+                        <label>التقاعد (10% من الاسمي)</label>
+                        <input type="text" id="pensionDeduction" readonly placeholder="0">
+                    </div>
+
+                    <div class="input-group">
+                        <label>الضمان الصحي (1% من الراتب الكلي)</label>
+                        <input type="text" id="healthDeduction" readonly placeholder="0">
+                    </div>
+
+                    <div class="input-group">
+                        <label for="taxDeduction">الضريبة (مبلغ ثابت)</label>
+                        <input type="text" id="taxDeduction" placeholder="0" oninput="handleCurrencyInput(this); calculateSalary();">
+                    </div>
+
+                    <div class="input-group">
+                        <label for="socialDeduction">الحماية الاجتماعية (مبلغ ثابت)</label>
+                        <input type="text" id="socialDeduction" placeholder="0" oninput="handleCurrencyInput(this); calculateSalary();">
+                    </div>
+
+                    <div class="summary-card" style="border-color: var(--danger); background: #fef2f2;">
+                        <span class="summary-title" style="color: var(--danger);">مجموع الاستقطاعات</span>
+                        <span class="summary-value" id="totalDeductions" style="color: var(--danger);">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="net-salary-card">
+                <h2>صافي الراتب النهائي</h2>
+                <div class="amount" id="netSalary">0 دينار</div>
+            </div>
+        </div>
+
+        <!-- Date Calculator Panel -->
+        <div id="dateView" class="view-panel">
+            <div class="date-grid">
+                <!-- Difference between two dates -->
+                <div class="date-box">
+                    <div class="section-title">الفرق بين تاريخين</div>
+                    <div class="input-group">
+                        <label>التاريخ الأول (DD/MM/YYYY)</label>
+                        <input type="date" id="dateStart" onchange="calcDateDiff()">
+                    </div>
+                    <div class="input-group">
+                        <label>التاريخ الثاني (DD/MM/YYYY)</label>
+                        <input type="date" id="dateEnd" onchange="calcDateDiff()">
+                    </div>
+                    <div class="result-box" id="dateDiffResult">قم باختيار التاريخين لعرض الفرق</div>
+                </div>
+
+                <!-- Add/Subtract days/months/years -->
+                <div class="date-box">
+                    <div class="section-title">إضافة / إنقاص من تاريخ</div>
+                    <div class="input-group">
+                        <label>التاريخ الأساسي</label>
+                        <input type="date" id="dateBase" onchange="modifyDate()">
+                    </div>
+                    <div class="input-group">
+                        <label>العملية</label>
+                        <select id="dateOperation" onchange="modifyDate()">
+                            <option value="add">إضافة (+)</option>
+                            <option value="sub">إنقاص (-)</option>
+                        </select>
+                    </div>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label>أيام</label>
+                            <input type="number" id="numDays" value="0" min="0" oninput="modifyDate()">
+                        </div>
+                        <div class="input-group">
+                            <label>أشهر</label>
+                            <input type="number" id="numMonths" value="0" min="0" oninput="modifyDate()">
+                        </div>
+                        <div class="input-group">
+                            <label>سنوات</label>
+                            <input type="number" id="numYears" value="0" min="0" oninput="modifyDate()">
+                        </div>
+                    </div>
+                    <div class="result-box" id="dateModResult">النتيجة ستظهر هنا</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const degreePercentages = {
+            'none': 0,
+            'primary': 0.15,
+            'intermediate': 0.15,
+            'preparatory': 0.30,
+            'institute': 0.35,
+            'bachelor': 0.45,
+            'higher_diploma': 0.55,
+            'master': 0.65,
+            'phd': 0.75
+        };
+
+        window.onload = function() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('dateStart').value = today;
+            document.getElementById('dateEnd').value = today;
+            document.getElementById('dateBase').value = today;
+            calculateSalary();
+        };
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.view-panel').forEach(panel => panel.classList.remove('active'));
+
+            if (tabName === 'salary') {
+                document.querySelectorAll('.tab-btn')[0].classList.add('active');
+                document.getElementById('salaryView').classList.add('active');
+            } else if (tabName === 'date') {
+                document.querySelectorAll('.tab-btn')[1].classList.add('active');
+                document.getElementById('dateView').classList.add('active');
+            }
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            document.getElementById('themeIcon').textContent = isDark ? '☀️' : '🌙';
+            document.getElementById('themeText').textContent = isDark ? 'الوضع النهار' : 'الوضع الليلي';
+        }
+
+        function formatNumber(num) {
+            if (isNaN(num)) return '0';
+            return new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 }).format(num);
+        }
+
+        function parseFormattedNumber(str) {
+            if (!str) return 0;
+            return parseFloat(str.toString().replace(/,/g, '')) || 0;
+        }
+
+        function handleCurrencyInput(input) {
+            let val = input.value.replace(/[^0-9.]/g, '');
+            if (val) {
+                let parts = val.split('.');
+                parts[0] = parseInt(parts[0], 10).toLocaleString('en-US');
+                input.value = parts.join('.');
+            } else {
+                input.value = '';
+            }
+        }
+
+        function calculateSalary() {
+            const nominal = parseFormattedNumber(document.getElementById('nominalSalary').value);
+
+            // Degree Allowance
+            const degreeKey = document.getElementById('degreeSelect').value;
+            const degreePct = degreePercentages[degreeKey] || 0;
+            const degreeVal = nominal * degreePct;
+            document.getElementById('degreeVal').value = formatNumber(degreeVal);
+
+            // Technical Hazard
+            const hazardPct = (parseFloat(document.getElementById('hazardPct').value) || 0) / 100;
+            const hazardVal = nominal * hazardPct;
+            document.getElementById('hazardVal').value = formatNumber(hazardVal);
+
+            // Special Allowance (Fixed 30%)
+            const specialVal = nominal * 0.30;
+            document.getElementById('specialVal').value = formatNumber(specialVal);
+
+            // Engineering Allowance (Editable %)
+            const engineeringPct = (parseFloat(document.getElementById('engineeringPct').value) || 0) / 100;
+            const engineeringVal = nominal * engineeringPct;
+            document.getElementById('engineeringVal').value = formatNumber(engineeringVal);
+
+            // Position Allowance
+            const positionPct = (parseFloat(document.getElementById('positionPct').value) || 0) / 100;
+            const positionVal = nominal * positionPct;
+            document.getElementById('positionVal').value = formatNumber(positionVal);
+
+            // Fixed Amounts (Can be cleared/edited)
+            const maritalVal = parseFormattedNumber(document.getElementById('maritalVal').value);
+            const childrenVal = parseFormattedNumber(document.getElementById('childrenVal').value);
+            const transportVal = parseFormattedNumber(document.getElementById('transportVal').value);
+
+            const totalAllowances = degreeVal + hazardVal + specialVal + engineeringVal + positionVal + maritalVal + childrenVal + transportVal;
+            const grossSalary = nominal + totalAllowances;
+            document.getElementById('grossSalary').textContent = formatNumber(grossSalary);
+
+            // Deductions Logic
+            const pensionDeduction = nominal * 0.10;
+            document.getElementById('pensionDeduction').value = formatNumber(pensionDeduction);
+
+            const healthDeduction = grossSalary * 0.01;
+            document.getElementById('healthDeduction').value = formatNumber(healthDeduction);
+
+            const taxDeduction = parseFormattedNumber(document.getElementById('taxDeduction').value);
+            const socialDeduction = parseFormattedNumber(document.getElementById('socialDeduction').value);
+
+            const totalDeductions = pensionDeduction + healthDeduction + taxDeduction + socialDeduction;
+            document.getElementById('totalDeductions').textContent = formatNumber(totalDeductions);
+
+            // Net Salary Calculation
+            const netSalary = grossSalary - totalDeductions;
+            document.getElementById('netSalary').textContent = formatNumber(netSalary) + ' دينار';
+        }
+
+        function resetSalaryForm() {
+            document.getElementById('nominalSalary').value = '';
+            document.getElementById('degreeSelect').value = 'none';
+            document.getElementById('hazardPct').value = '0';
+            document.getElementById('engineeringPct').value = '0';
+            document.getElementById('positionPct').value = '0';
+            document.getElementById('maritalVal').value = '';
+            document.getElementById('childrenVal').value = '';
+            document.getElementById('transportVal').value = '';
+            document.getElementById('taxDeduction').value = '';
+            document.getElementById('socialDeduction').value = '';
+            calculateSalary();
+        }
+
+        function formatDateArabic(date) {
+            const d = date.getDate().toString().padStart(2, '0');
+            const m = (date.getMonth() + 1).toString().padStart(2, '0');
+            const y = date.getFullYear();
+            return `${d} / ${m} / ${y}`;
+        }
+
+        function calcDateDiff() {
+            const d1Val = document.getElementById('dateStart').value;
+            const d2Val = document.getElementById('dateEnd').value;
+            if (!d1Val || !d2Val) return;
+
+            const d1 = new Date(d1Val);
+            const d2 = new Date(d2Val);
+
+            let diffTime = Math.abs(d2 - d1);
+            let diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            let years = d2.getFullYear() - d1.getFullYear();
+            let months = d2.getMonth() - d1.getMonth();
+            let days = d2.getDate() - d1.getDate();
+
+            if (days < 0) {
+                months--;
+                let prevMonth = new Date(d2.getFullYear(), d2.getMonth(), 0);
+                days += prevMonth.getDate();
+            }
+            if (months < 0) {
+                years--;
+                months += 12;
+            }
+
+            document.getElementById('dateDiffResult').innerHTML = 
+                `الفرق: ${Math.abs(years)} سنة، و ${Math.abs(months)} شهر، و ${Math.abs(days)} يوم.<br>` +
+                `<small>(إجمالي الأيام: ${formatNumber(diffDays)} يوم)</small>`;
+        }
+
+        function modifyDate() {
+            const baseVal = document.getElementById('dateBase').value;
+            if (!baseVal) return;
+
+            const baseDate = new Date(baseVal);
+            const op = document.getElementById('dateOperation').value;
+            const addDays = (parseInt(document.getElementById('numDays').value) || 0) * (op === 'add' ? 1 : -1);
+            const addMonths = (parseInt(document.getElementById('numMonths').value) || 0) * (op === 'add' ? 1 : -1);
+            const addYears = (parseInt(document.getElementById('numYears').value) || 0) * (op === 'add' ? 1 : -1);
+
+            baseDate.setFullYear(baseDate.getFullYear() + addYears);
+            baseDate.setMonth(baseDate.getMonth() + addMonths);
+            baseDate.setDate(baseDate.getDate() + addDays);
+
+            document.getElementById('dateModResult').textContent = `التاريخ الناتج: ${formatDateArabic(baseDate)}`;
+        }
+    </script>
+</body>
+</html>
